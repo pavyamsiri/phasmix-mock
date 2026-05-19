@@ -72,8 +72,8 @@ class MockModel:
         dx: float = float(np.mean(np.diff(x_edges)))
         dy: float = float(np.mean(np.diff(y_edges)))
         mock_grid = self.mock_grid(x_edges, y_edges)
-        background = mock_grid.background
-        density = mock_grid.density
+        background = num_samples * mock_grid.background
+        density = num_samples * mock_grid.density
 
         rng = np.random.default_rng(seed)
 
