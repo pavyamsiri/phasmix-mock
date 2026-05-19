@@ -92,10 +92,13 @@ class MockModel:
             sample_indices, density.shape
         )
 
+        x_centres = 0.5 * (x_edges[:-1] + x_edges[1:])
+        y_centres = 0.5 * (y_edges[:-1] + y_edges[1:])
+
         jitter_x = rng.uniform(-dx / 2, dx / 2, size=num_samples)
         jitter_y = rng.uniform(-dy / 2, dy / 2, size=num_samples)
-        sample_x = x_edges[sample_indices_x] + jitter_x
-        sample_y = y_edges[sample_indices_y] + jitter_y
+        sample_x = x_centres[sample_indices_x] + jitter_x
+        sample_y = y_centres[sample_indices_y] + jitter_y
 
         return MockParticles(
             x=sample_x, y=sample_y, density=density, background=background
