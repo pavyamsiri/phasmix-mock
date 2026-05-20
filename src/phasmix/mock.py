@@ -49,12 +49,13 @@ class MockModel:
         for comp in self._background:
             background += comp(x_mesh, y_mesh)
 
-        signal: onp.Array2D[np.float64] = np.ones(
-            (num_y_bins, num_x_bins), dtype=np.float64
+        signal: onp.Array2D[np.float64] = np.full(
+            (num_y_bins, num_x_bins), -np.inf, dtype=np.float64
         )
 
         for comp in self._signal:
-            signal *= comp(x_mesh, y_mesh)
+            signal = np.maximum(signal, comp(x_mesh, y_mesh))
+        signal[~np.isfinite(signal)] = 1.0
 
         density = background * signal
         norm = np.sum(density)
