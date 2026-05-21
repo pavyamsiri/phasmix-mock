@@ -12,7 +12,6 @@ dependencies = [
     "optype[numpy]>=0.17.0",
     "scipy>=1.17.1",
     "scipy-stubs>=1.17.1.4",
-    "tqdm>=4.67.3",
 ]
 
 [build-system]
