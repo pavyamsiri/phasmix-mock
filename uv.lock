@@ -3,14 +3,6 @@ revision = 3
 requires-python = ">=3.13"
 
 [[package]]
-name = "agama"
-version = "1.0"
-source = { git = "https://github.com/pavyamsiri/agama?rev=uv#219ab990b5f315aa97745566800bdbae30a16fdf" }
-dependencies = [
-    { name = "numpy" },
-]
-
-[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -321,7 +313,6 @@ name = "phasmix"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "agama" },
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "optype", extra = ["numpy"] },
@@ -332,7 +323,6 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "agama", git = "https://github.com/pavyamsiri/agama?rev=uv" },
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "numpy", specifier = ">=2.4.4" },
     { name = "optype", extras = ["numpy"], specifier = ">=0.17.0" },
