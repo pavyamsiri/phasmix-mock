@@ -32,6 +32,19 @@ class MockGrid:
     density: onp.Array2D[np.float64]
     background: onp.Array2D[np.float64]
 
+    def __post_init__(self) -> None:
+        """Validate attributes."""
+
+        _validate_grid_ndim("density", self.density, ndim=2)
+        _validate_grid_ndim("background", self.background, ndim=2)
+
+        _validate_grid_dtype("density", self.density, dtype=np.float64)
+        _validate_grid_dtype("background", self.background, dtype=np.float64)
+
+        _validate_common_shape(
+            ("density", self.density), ("background", self.background)
+        )
+
 
 @dataclass(frozen=True)
 class MockParticles:
@@ -54,6 +67,24 @@ class MockParticles:
     y: onp.Array1D[np.float64]
     density: onp.Array2D[np.float64]
     background: onp.Array2D[np.float64]
+
+    def __post_init__(self) -> None:
+        """Validate attributes."""
+
+        _validate_grid_ndim("x", self.x, ndim=1)
+        _validate_grid_ndim("y", self.y, ndim=1)
+        _validate_grid_ndim("density", self.density, ndim=2)
+        _validate_grid_ndim("background", self.background, ndim=2)
+
+        _validate_grid_dtype("x", self.x, dtype=np.float64)
+        _validate_grid_dtype("y", self.y, dtype=np.float64)
+        _validate_grid_dtype("density", self.density, dtype=np.float64)
+        _validate_grid_dtype("background", self.background, dtype=np.float64)
+
+        _validate_common_shape(("x", self.x), ("y", self.y))
+        _validate_common_shape(
+            ("density", self.density), ("background", self.background)
+        )
 
 
 class MockModel:
@@ -180,3 +211,28 @@ class MockModel:
         return MockParticles(
             x=sample_x, y=sample_y, density=density, background=background
         )
+
+
+def _validate_grid_ndim(name: str, arr: np.ndarray, *, ndim: int) -> None:
+    if arr.ndim != ndim:
+        msg = f"`{name}` must be a {ndim}-dim array: {arr.ndim} != {ndim}"
+        raise ValueError(msg)
+
+
+def _validate_grid_dtype[T: np.generic](
+    name: str, arr: np.ndarray, *, dtype: np.dtype[T] | type[T]
+) -> None:
+    if arr.dtype != dtype:
+        msg = f"`{name}` must be an array with dtype {dtype}: {arr.dtype} != {dtype}"
+        raise ValueError(msg)
+
+
+def _validate_common_shape(*arrays: tuple[str, np.ndarray]) -> None:
+    shape: tuple[int, ...] | None = None
+    for name, arr in arrays:
+        if shape is not None:
+            if arr.shape != shape:
+                msg = f"`{name}` should the same shape as {shape} but it has shape {arr.shape}"
+                raise ValueError(msg)
+        else:
+            shape = arr.shape
