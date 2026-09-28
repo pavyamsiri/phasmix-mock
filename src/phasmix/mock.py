@@ -156,7 +156,7 @@ class MockModel:
         x_edges: onp.Array1D[np.float64],
         y_edges: onp.Array1D[np.float64],
         *,
-        seed: int | None = None,
+        rng: np.random.Generator | op.CanInt | None = None,
     ) -> MockParticles:
         """Generate mock data and return the data in particle form.
 
@@ -168,8 +168,8 @@ class MockModel:
             The bin edges in the x-axis; assumed to be monotonically increasing.
         y_edges : Array1D[f64]
             The bin edges in the y-axis; assumed to be monotonically increasing.
-        seed : int | None
-            The RNG seed if given otherwise a random seed will be used.
+        rng : np.random.Generator | int | None
+            The RNG to use if given or the seed to use with the default generator or a non-seeded RNG if none is given.
 
         Returns
         -------
@@ -185,7 +185,11 @@ class MockModel:
         background = num_samples * mock_grid.background
         density = num_samples * mock_grid.density
 
-        rng = np.random.default_rng(seed)
+        if not isinstance(rng, np.random.Generator):
+            if rng is not None:
+                rng = np.random.default_rng()
+            else:
+                rng = np.random.default_rng(rng)
 
         density_flat = density.ravel()
         density_norm = density_flat / np.sum(density_flat)
