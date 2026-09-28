@@ -88,6 +88,8 @@ class MockParticles:
 
 
 class MockModel:
+    """The data model used during mock data generation."""
+
     def __init__(
         self, signal: Sequence[Component], background: Sequence[Component]
     ) -> None:
