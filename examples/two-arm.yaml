@@ -1,0 +1,49 @@
+# Two spiral components; edit or copy component blocks below.
+format: phasmix
+version: 1
+sampler: grid-jitter-v1
+grid:
+  x:
+    min: -1.5
+    max: 1.5
+    bins: 256
+  y:
+    min: -80.0
+    max: 80.0
+    bins: 256
+background:
+- type: gaussian-v1
+  parameters:
+    x_scale: 0.4
+    y_scale: 25.0
+    amplitude: 1.0
+    variance: 1.0
+    x_offset: 0.0
+    y_offset: 0.0
+signal:
+- type: alinder-v1
+  parameters:
+    alpha: 0.3
+    b: 0.05
+    c: 0.01
+    theta0: 0.0
+    scale_factor: 50.0
+    rho: 0.2
+    winding: 1
+    flattening_strength: 0.1
+- type: alinder-v1
+  parameters:
+    alpha: 0.3
+    b: 0.05
+    c: 0.01
+    theta0: 3.141592653589793
+    scale_factor: 50.0
+    rho: 0.2
+    winding: 1
+    flattening_strength: 0.1
+sampling:
+  count: 10000
+  seed: 2023
+  bit_generator: PCG64
+metadata:
+  description: Example of a two-arm mock phase spiral.
