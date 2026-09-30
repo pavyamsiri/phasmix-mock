@@ -11,7 +11,7 @@ import numpy as np
 import strictyaml
 from strictyaml.validators import Validator
 
-from phasmix.mock import MockModel, MockParticles
+from phasmock.mock import MockModel, MockParticles
 
 if TYPE_CHECKING:
     from typing import Final, Literal

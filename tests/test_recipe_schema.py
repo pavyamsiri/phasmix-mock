@@ -5,7 +5,7 @@ import unittest
 
 import strictyaml
 
-from phasmix.recipe import recipe_schema
+from phasmock.recipe import recipe_schema
 
 
 EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
