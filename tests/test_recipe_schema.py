@@ -1,12 +1,11 @@
 """Regression tests for type-discriminated recipe validation."""
 
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 import strictyaml
 
-from phasmock.recipe import recipe_schema
-
+from phasmock._recipe_yaml import recipe_schema
 
 EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
 

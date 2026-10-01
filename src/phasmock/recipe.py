@@ -13,14 +13,8 @@ if TYPE_CHECKING:
     from typing import Final, Literal
 
     from optype import numpy as onp
+
 type SupportedRng = Literal["PCG64"]
-
-
-def recipe_schema():
-    """Build the YAML schema for a version-1 recipe."""
-    from phasmock._recipe_yaml import recipe_schema as yaml_recipe_schema
-
-    return yaml_recipe_schema()
 
 
 @dataclass(frozen=True)
