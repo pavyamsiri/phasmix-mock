@@ -58,9 +58,11 @@ class RecipeSchemaTests(unittest.TestCase):
             ("    winding: 1", "    winding: 0"),
         )
         for old, new in replacements:
-            with self.subTest(old=old, new=new):
-                with self.assertRaises(strictyaml.YAMLValidationError):
-                    strictyaml.load(self.contents.replace(old, new), self.schema)
+            with (
+                self.subTest(old=old, new=new),
+                self.assertRaises(strictyaml.YAMLValidationError),
+            ):
+                strictyaml.load(self.contents.replace(old, new), self.schema)
 
     def test_short_example_is_incomplete(self) -> None:
         with self.assertRaises(strictyaml.YAMLValidationError):

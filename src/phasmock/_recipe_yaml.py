@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from os import PathLike
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final, cast, override
 
 import strictyaml
 from strictyaml.validators import Validator
 
-if TYPE_CHECKING:
-    from phasmock.recipe import MockRecipe
+from phasmock._recipe_types import ParsedRecipeData
 
+if TYPE_CHECKING:
     from strictyaml.yamllocation import YAMLChunk
 
 
@@ -19,19 +20,28 @@ class _ComponentSchema(Validator):
     """Select a component's parameter schema using its required type tag."""
 
     def __init__(self, parameters: dict[str, strictyaml.Map]) -> None:
-        self._parameters = parameters
-        self._envelope = strictyaml.Map(
+        self._parameters: Final[Mapping[str, strictyaml.Map]] = parameters
+        self._envelope: strictyaml.Map = strictyaml.Map(
             {"type": strictyaml.Enum(list(parameters)), "parameters": strictyaml.Any()}
         )
 
+    @override
     def __call__(self, chunk: YAMLChunk) -> strictyaml.YAML:
         component = self._envelope(chunk)
-        component["parameters"].revalidate(self._parameters[component["type"].data])
+        parameter_name = cast("str", component["type"].data)
+        component["parameters"].revalidate(self._parameters[parameter_name])
         return component
 
 
 def recipe_schema() -> strictyaml.Map:
-    """Build the version-1 recipe schema for ``strictyaml.load``."""
+    """Build the version-1 recipe schema for ``strictyaml.load``.
+
+    Returns
+    -------
+    schema : strictyaml.Map
+        The schema.
+
+    """
     component = _ComponentSchema(
         {
             "gaussian-v1": strictyaml.Map(
@@ -87,12 +97,23 @@ def recipe_schema() -> strictyaml.Map:
     )
 
 
-def from_yaml(path: str | PathLike[str]) -> MockRecipe:
-    """Load and validate a YAML recipe."""
+def from_yaml(path: str | PathLike[str]) -> ParsedRecipeData:
+    """Parse and validate a YAML file into its typed dictionary form.
+
+    Parameters
+    ----------
+    path : str | PathLike[str]
+        The path to the YAML file.
+
+    Returns
+    -------
+    data : ParsedRecipeData
+        The validated recipe data.
+
+    """
     path = Path(path)
     with path.open(mode="r") as file:
         contents = file.read()
 
-    data = strictyaml.load(contents, recipe_schema()).data
-    del data
-    raise NotImplementedError
+    # The schema validates the shape, values and defaults represented here.
+    return cast("ParsedRecipeData", strictyaml.load(contents, recipe_schema()).data)

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 import numpy as np
 
@@ -103,8 +103,18 @@ class MockModel:
             The components that comprise the background.
 
         """
-        self._signal: Sequence[Component] = signal
-        self._background: Sequence[Component] = background
+        self._signal: Final[Sequence[Component]] = signal
+        self._background: Final[Sequence[Component]] = background
+
+    @property
+    def signal(self) -> Sequence[Component]:
+        """Sequence[Component]: The list of signal components."""
+        return self._signal
+
+    @property
+    def background(self) -> Sequence[Component]:
+        """Sequence[Component]: The list of background components."""
+        return self._background
 
     def mock_grid(
         self, x_edges: onp.Array1D[np.float64], y_edges: onp.Array1D[np.float64]

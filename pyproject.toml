@@ -13,6 +13,7 @@ dependencies = [
     "scipy>=1.17.1",
     "scipy-stubs>=1.17.1.4",
     "strictyaml>=1.7.3",
+    "strictyaml-stubs",
 ]
 
 [build-system]
@@ -21,6 +22,9 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-name = "phasmock"
+
+[tool.uv.sources]
+strictyaml-stubs = { path = "../../src/strictyaml-stubs" }
 
 [dependency-groups]
 dev = [

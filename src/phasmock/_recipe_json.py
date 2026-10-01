@@ -8,11 +8,11 @@ from __future__ import annotations
 
 from os import PathLike
 
-from phasmock.recipe import MockRecipe
+from phasmock._recipe_types import ParsedRecipeData
 
 
-def from_json(path: str | PathLike[str]) -> MockRecipe:
-    """Load a JSON recipe.
+def from_json(path: str | PathLike[str]) -> ParsedRecipeData:
+    """Parse a JSON recipe into its typed dictionary form.
 
     JSON recipe decoding has not been implemented yet.
     """
