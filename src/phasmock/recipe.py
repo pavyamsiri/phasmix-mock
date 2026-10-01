@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from os import PathLike
+from pathlib import Path
 from typing import TYPE_CHECKING, assert_never, override
 
 import numpy as np
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 
     from optype import numpy as onp
 
-    from phasmock._recipe_types import ComponentEntry, ParsedRecipeData
+    from phasmock._recipe_types import AxisData, ComponentEntry, ParsedRecipeData
 
 type SupportedRng = Literal["PCG64"]
 
@@ -102,6 +103,77 @@ class MockRecipe:
             rng=self._rng.to_generator(),
         )
 
+    def save_yaml(self, path: str | PathLike[str]) -> None:
+        """Save this recipe, using the path extension to choose a format by default.
+
+        This function will auto-detect which format to save in from the path's file extension.
+        Pass `format` to override this functionality. Unrecognised file extensions require
+        an explicit `format`.
+
+        Parameters
+        ----------
+        path : str  | PathLike[str]
+            The path to save to.
+        format : "yaml" | "json" | None
+            Set this argument to either "yaml" or "json" to explicitly determine which format the recipe will
+            be saved in. If this argument is `None` then the format will be detected from the extension.
+
+        """
+        from phasmock._recipe_yaml import save_yaml
+
+        save_yaml(self._to_parsed(), path)
+
+    def save_json(self, path: str | PathLike[str]) -> None:
+        """Save this recipe as JSON.
+
+        JSON serialization has not been implemented yet.
+        """
+        _ = path
+        raise NotImplementedError
+
+    def save(
+        self,
+        path: str | PathLike[str],
+        *,
+        format: Literal["yaml", "json"] | None = None,
+    ) -> None:
+        """Save this recipe, using the path extension to choose a format by default.
+
+        This function will auto-detect which format to save in from the path's file extension.
+        Pass `format` to override this functionality. Unrecognised file extensions require
+        an explicit `format`.
+
+        Parameters
+        ----------
+        path : str  | PathLike[str]
+            The path to save to.
+        format : "yaml" | "json" | None
+            Set this argument to either "yaml" or "json" to explicitly determine which format the recipe will
+            be saved in. If this argument is `None` then the format will be detected from the extension.
+
+        """
+        selected_format = format
+        if selected_format is None:
+            match Path(path).suffix.lower():
+                case ".yaml" | ".yml":
+                    selected_format = "yaml"
+                case ".json":
+                    selected_format = "json"
+                case suffix:
+                    msg = (
+                        f"Cannot infer recipe format from extension {suffix!r}; "
+                        "pass format='yaml' or format='json'."
+                    )
+                    raise ValueError(msg)
+
+        match selected_format:
+            case "yaml":
+                self.save_yaml(path)
+            case "json":
+                self.save_json(path)
+            case format_value:  # pyright: ignore[reportUnnecessaryComparison]
+                assert_never(format_value)
+
     @classmethod
     def from_yaml(cls, path: str | PathLike[str]) -> MockRecipe:
         from phasmock._recipe_yaml import from_yaml
@@ -144,6 +216,31 @@ class MockRecipe:
             description=metadata.get("description"),
         )
 
+    def _to_parsed(self) -> ParsedRecipeData:
+        data: ParsedRecipeData = {
+            "format": "phasmix",
+            "version": 1,
+            "sampler": "grid-jitter-v1",
+            "grid": {
+                "x": _axis_to_data(self._x_edges),
+                "y": _axis_to_data(self._y_edges),
+            },
+            "background": [
+                _component_to_data(component) for component in self._model.background
+            ],
+            "signal": [
+                _component_to_data(component) for component in self._model.signal
+            ],
+            "sampling": {
+                "count": self._num_samples,
+                "seed": self._rng.seed,
+                "bit_generator": self._rng.kind,
+            },
+        }
+        if self._description is not None:
+            data["metadata"] = {"description": self._description}
+        return data
+
 
 def _make_component(component: ComponentEntry) -> Component:
     match component["type"]:
@@ -153,3 +250,48 @@ def _make_component(component: ComponentEntry) -> Component:
             return AlinderComponent(**component["parameters"])
         case component_type:  # pyright: ignore[reportUnnecessaryComparison]
             assert_never(component_type)
+
+
+def _axis_to_data(edges: onp.Array1D[np.float64]) -> AxisData:
+    if len(edges) < 2:
+        msg = "A recipe grid axis must contain at least two edges."
+        raise ValueError(msg)
+
+    widths = np.diff(edges)
+    if not np.all(widths > 0.0) or not np.allclose(widths, widths[0]):  # pyright: ignore[reportAny]
+        msg = "Recipe grid edges must be strictly increasing and evenly spaced."
+        raise ValueError(msg)
+
+    return {"min": float(edges[0]), "max": float(edges[-1]), "bins": len(edges) - 1}  # pyright: ignore[reportAny]
+
+
+def _component_to_data(component: Component) -> ComponentEntry:
+    if isinstance(component, GaussianComponent):
+        return {
+            "type": "gaussian-v1",
+            "parameters": {
+                "x_scale": component.x_scale,
+                "y_scale": component.y_scale,
+                "amplitude": component.amplitude,
+                "variance": component.variance,
+                "x_offset": component.x_offset,
+                "y_offset": component.y_offset,
+            },
+        }
+    if isinstance(component, AlinderComponent):
+        return {
+            "type": "alinder-v1",
+            "parameters": {
+                "alpha": component.alpha,
+                "b": component.b,
+                "c": component.c,
+                "theta0": component.theta0,
+                "scale_factor": component.scale_factor,
+                "rho": component.rho,
+                "winding": component.winding,
+                "flattening_strength": component.flattening_strength,
+            },
+        }
+
+    msg = f"Cannot serialize unsupported component type {type(component).__name__}."
+    raise TypeError(msg)

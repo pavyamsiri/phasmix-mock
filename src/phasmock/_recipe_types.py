@@ -5,15 +5,15 @@ from __future__ import annotations
 from typing import Final, Literal, NotRequired, TypedDict
 
 
-class _Axis(TypedDict):
+class AxisData(TypedDict):
     min: float
     max: float
     bins: int
 
 
 class _Grid(TypedDict):
-    x: _Axis
-    y: _Axis
+    x: AxisData
+    y: AxisData
 
 
 class _GaussianParameters(TypedDict):
@@ -68,4 +68,4 @@ class ParsedRecipeData(TypedDict):
     metadata: NotRequired[dict[str, str]]
 
 
-__all__: Final[list[str]] = ["ComponentEntry", "ParsedRecipeData"]
+__all__: Final[list[str]] = ["AxisData", "ComponentEntry", "ParsedRecipeData"]

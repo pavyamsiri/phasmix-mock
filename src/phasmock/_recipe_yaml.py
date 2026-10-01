@@ -13,6 +13,8 @@ from strictyaml.validators import Validator
 from phasmock._recipe_types import ParsedRecipeData
 
 if TYPE_CHECKING:
+    from phasmock._recipe_types import ComponentEntry
+
     from strictyaml.yamllocation import YAMLChunk
 
 
@@ -31,6 +33,17 @@ class _ComponentSchema(Validator):
         parameter_name = cast("str", component["type"].data)
         component["parameters"].revalidate(self._parameters[parameter_name])
         return component
+
+    @override
+    def to_yaml(self, data: object) -> object:
+        component = cast("ComponentEntry", data)
+        component_schema = strictyaml.Map(
+            {
+                "type": strictyaml.Enum(list(self._parameters)),
+                "parameters": self._parameters[component["type"]],
+            }
+        )
+        return component_schema.to_yaml(cast("dict[str, object]", component))
 
 
 def recipe_schema() -> strictyaml.Map:
@@ -117,3 +130,9 @@ def from_yaml(path: str | PathLike[str]) -> ParsedRecipeData:
 
     # The schema validates the shape, values and defaults represented here.
     return cast("ParsedRecipeData", strictyaml.load(contents, recipe_schema()).data)
+
+
+def save_yaml(data: ParsedRecipeData, path: str | PathLike[str]) -> None:
+    """Serialize validated recipe data to a YAML file."""
+    contents = strictyaml.as_document(data, recipe_schema()).as_yaml()
+    _ = Path(path).write_text(contents, encoding="utf-8")
