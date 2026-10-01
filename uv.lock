@@ -343,7 +343,7 @@ requires-dist = [
     { name = "scipy", specifier = ">=1.17.1" },
     { name = "scipy-stubs", specifier = ">=1.17.1.4" },
     { name = "strictyaml", specifier = ">=1.7.3" },
-    { name = "strictyaml-stubs", directory = "../../src/strictyaml-stubs" },
+    { name = "strictyaml-stubs", git = "https://github.com/pavyamsiri/strictyaml-stubs.git" },
 ]
 
 [package.metadata.requires-dev]
@@ -552,19 +552,7 @@ wheels = [
 [[package]]
 name = "strictyaml-stubs"
 version = "0.1.0"
-source = { directory = "../../src/strictyaml-stubs" }
+source = { git = "https://github.com/pavyamsiri/strictyaml-stubs.git#56698597d16e554c148e369e72ad35d54fc7dcba" }
 dependencies = [
     { name = "strictyaml" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "strictyaml", specifier = ">=1.7.3,<2" }]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "basedmypy", specifier = ">=2.10.0" },
-    { name = "basedpyright", specifier = ">=1.39.3" },
-    { name = "pyrefly", specifier = ">=1.2.0" },
-    { name = "ruff", specifier = ">=0.16.3" },
-    { name = "ty", specifier = ">=0.0.71" },
 ]

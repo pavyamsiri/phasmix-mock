@@ -24,7 +24,7 @@ build-backend = "uv_build"
 module-name = "phasmock"
 
 [tool.uv.sources]
-strictyaml-stubs = { path = "../../src/strictyaml-stubs" }
+strictyaml-stubs = { git = "https://github.com/pavyamsiri/strictyaml-stubs.git" }
 
 [dependency-groups]
 dev = [
