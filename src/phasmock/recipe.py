@@ -69,6 +69,67 @@ class MockRecipe:
         self._rng: Final[RngSpec] = rng
         self._description: Final[str | None] = description
 
+        # Derived quantities
+        self._x_centres: Final[onp.Array1D[np.float64]] = 0.5 * (
+            x_edges[:-1] + x_edges[1:]
+        )
+        self._y_centres: Final[onp.Array1D[np.float64]] = 0.5 * (
+            y_edges[:-1] + y_edges[1:]
+        )
+        x_mesh, y_mesh = np.meshgrid(self._x_centres, self._y_centres)
+        self._x_mesh: Final[onp.Array2D[np.float64]] = x_mesh
+        self._y_mesh: Final[onp.Array2D[np.float64]] = y_mesh
+
+    @property
+    def model(self) -> MockModel:
+        """MockModel: The mock data model."""
+        return self._model
+
+    @property
+    def num_samples(self) -> int:
+        """int: The number of samples."""
+        return self._num_samples
+
+    @property
+    def x_edges(self) -> onp.Array1D[np.float64]:
+        """Array1D[f64]: The edges of the bins along the x-axis."""
+        return self._x_edges
+
+    @property
+    def y_edges(self) -> onp.Array1D[np.float64]:
+        """Array1D[f64]: The edges of the bins along the y-axis."""
+        return self._y_edges
+
+    @property
+    def x_centres(self) -> onp.Array1D[np.float64]:
+        """Array1D[f64]: The centres of the bins along the x-axis."""
+        return self._x_centres
+
+    @property
+    def y_centres(self) -> onp.Array1D[np.float64]:
+        """Array1D[f64]: The centres of the bins along the y-axis."""
+        return self._y_centres
+
+    @property
+    def x_mesh(self) -> onp.Array2D[np.float64]:
+        """Array2D[f64]: The 2D mesh of the x-centres of the bins."""
+        return self._x_mesh
+
+    @property
+    def y_mesh(self) -> onp.Array2D[np.float64]:
+        """Array2D[f64]: The 2D mesh of the y-centres of the bins."""
+        return self._y_mesh
+
+    @property
+    def rng(self) -> RngSpec:
+        """RngSpec: The RNG spec."""
+        return self._rng
+
+    @property
+    def description(self) -> str | None:
+        """str | None: The description if set."""
+        return self._description
+
     @override
     def __str__(self) -> str:
         x_grid = (
