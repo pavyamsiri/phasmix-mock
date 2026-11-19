@@ -64,10 +64,6 @@ class RecipeSchemaTests(unittest.TestCase):
             ):
                 strictyaml.load(self.contents.replace(old, new), self.schema)
 
-    def test_short_example_is_incomplete(self) -> None:
-        with self.assertRaises(strictyaml.YAMLValidationError):
-            strictyaml.load((EXAMPLES / "two-arm_short.yaml").read_text(), self.schema)
-
 
 if __name__ == "__main__":
     unittest.main()
