@@ -16,6 +16,9 @@ if TYPE_CHECKING:
     from phasmock.component import Component
 
 
+__all__: Final[list[str]] = ["MockGrid", "MockModel", "MockParticles"]
+
+
 @dataclass(frozen=True)
 class MockGrid:
     """Generated mock data returned in the form of a 2D grid of total number count and background number count.

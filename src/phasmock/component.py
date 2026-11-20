@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
     from optype import numpy as onp
 
-__all__: Final[list[str]] = ["AlinderComponent", "Component", "GaussianComponent"]
+__all__: Final[list[str]] = ["AlinderComponent", "Component", "GaussianComponent", "MidplaneExtinctionComponent"]
 
 
 @runtime_checkable
@@ -210,6 +210,51 @@ class AlinderComponent(Component):
         # NOTE: `__getitem__` returns `Any` even though for Array1D[T] it should be T
         phase = self.spiral_phase(r_test_arr)[0]  # pyright: ignore[reportAny]
         return float(cast("np.float64", phase) + self.theta0)
+
+
+@dataclass(frozen=True)
+class MidplaneExtinctionComponent(Component):
+    """A component designed to mimic midplane extinction.
+
+    The function is a smoothed top hat: S(z) = 1 - A/2 [tanh((z + z0)/w) - tanh((z - z0)/w)]
+
+    Attributes
+    ----------
+    amplitude : float
+        The strength of the suppression, `A`.
+    half_width : float
+        The half width (height) of the main suppression region, `z0`.
+    transition_width : float
+        The transition width that controls how fast the supression returns to 1, `w`.
+
+
+    """
+
+    amplitude: float
+    half_width: float
+    transition_width: float
+
+    def __post_init__(self) -> None:
+        """Validate attributes."""
+        # Ensure lengths are positive
+        _validate_positive("half_width", self.half_width)
+        _validate_positive("transition_width", self.transition_width)
+
+        # Ensure amplitude is not negative
+        _validate_nonnegative("amplitude", self.amplitude)
+
+    @override
+    def __call__[ShapeT: tuple[Any, ...]](
+        self, x: onp.ArrayND[np.float64, ShapeT], y: onp.ArrayND[np.float64, ShapeT], /
+    ) -> onp.ArrayND[np.float64, ShapeT]:
+        z = x
+        amplitude: float = self.amplitude
+        half_width: float = self.half_width
+        transition_width: float = self.transition_width
+        result = 1.0 - 0.5 * amplitude * (
+            np.tanh((z + half_width) / transition_width) - np.tanh((z - half_width) / transition_width)
+        )
+        return cast("onp.ArrayND[np.float64, ShapeT]", result)
 
 
 def _validate_positive(name: str, value: float) -> None:
