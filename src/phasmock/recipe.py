@@ -39,11 +39,13 @@ class RngSpec:
     seed: int
 
     def __post_init__(self) -> None:
+        """Validate fields."""
         if self.kind not in ("PCG64",):
             msg = f"{self.kind} is not a supported RNG."
             raise ValueError(msg)
 
     def to_generator(self) -> np.random.Generator:
+        """Convert to numpy RNG."""
         match self.kind:
             case "PCG64":
                 return np.random.Generator(np.random.PCG64(self.seed))
@@ -52,6 +54,8 @@ class RngSpec:
 
 
 class MockRecipe:
+    """Represents a recipe to generate mock data."""
+
     def __init__(
         self,
         *,
@@ -62,6 +66,24 @@ class MockRecipe:
         rng: RngSpec,
         description: str | None,
     ) -> None:
+        """Create a recipe.
+
+        Parameters
+        ----------
+        model : MockModel
+            The mock data model.
+        num_samples : int
+            The number of samples to draw from when generating particles.
+        x_edges : Array1D[f64]
+            The bin edges along the x-axis (z or Xz).
+        y_edges : Array1D[f64]
+            The bin edges along the y-axis (Vz or Yz).
+        rng : RngSpec
+            A specified RNG.
+        description : str | None
+            An optional description of the recipe.
+
+        """
         self._model: Final[MockModel] = model
         self._num_samples: Final[int] = num_samples
         self._x_edges: Final[onp.Array1D[np.float64]] = x_edges
@@ -70,12 +92,8 @@ class MockRecipe:
         self._description: Final[str | None] = description
 
         # Derived quantities
-        self._x_centres: Final[onp.Array1D[np.float64]] = 0.5 * (
-            x_edges[:-1] + x_edges[1:]
-        )
-        self._y_centres: Final[onp.Array1D[np.float64]] = 0.5 * (
-            y_edges[:-1] + y_edges[1:]
-        )
+        self._x_centres: Final[onp.Array1D[np.float64]] = 0.5 * (x_edges[:-1] + x_edges[1:])
+        self._y_centres: Final[onp.Array1D[np.float64]] = 0.5 * (y_edges[:-1] + y_edges[1:])
         x_mesh, y_mesh = np.meshgrid(self._x_centres, self._y_centres)
         self._x_mesh: Final[onp.Array2D[np.float64]] = x_mesh
         self._y_mesh: Final[onp.Array2D[np.float64]] = y_mesh
@@ -132,14 +150,8 @@ class MockRecipe:
 
     @override
     def __str__(self) -> str:
-        x_grid = (
-            f"{self._x_edges[0]:g}..{self._x_edges[-1]:g}"
-            f" ({len(self._x_edges) - 1} bins)"
-        )
-        y_grid = (
-            f"{self._y_edges[0]:g}..{self._y_edges[-1]:g}"
-            f" ({len(self._y_edges) - 1} bins)"
-        )
+        x_grid = f"{self._x_edges[0]:g}..{self._x_edges[-1]:g} ({len(self._x_edges) - 1} bins)"
+        y_grid = f"{self._y_edges[0]:g}..{self._y_edges[-1]:g} ({len(self._y_edges) - 1} bins)"
         background = ", ".join(map(repr, self._model.background))
         signal = ", ".join(map(repr, self._model.signal))
 
@@ -157,6 +169,14 @@ class MockRecipe:
         return buffer
 
     def generate(self) -> MockParticles:
+        """Generate mock particles from the recipe.
+
+        Returns
+        -------
+        particles : MockParticles
+            The mock particles.
+
+        """
         return self._model.mock_particles(
             self._num_samples,
             self._x_edges,
@@ -180,7 +200,7 @@ class MockRecipe:
             be saved in. If this argument is `None` then the format will be detected from the extension.
 
         """
-        from phasmock._recipe_yaml import save_yaml
+        from phasmock._recipe_yaml import save_yaml  # noqa: PLC0415
 
         save_yaml(self._to_parsed(), path)
 
@@ -196,7 +216,7 @@ class MockRecipe:
         self,
         path: str | PathLike[str],
         *,
-        format: Literal["yaml", "json"] | None = None,
+        save_format: Literal["yaml", "json"] | None = None,
     ) -> None:
         """Save this recipe, using the path extension to choose a format by default.
 
@@ -208,12 +228,12 @@ class MockRecipe:
         ----------
         path : str  | PathLike[str]
             The path to save to.
-        format : "yaml" | "json" | None
+        save_format : "yaml" | "json" | None
             Set this argument to either "yaml" or "json" to explicitly determine which format the recipe will
             be saved in. If this argument is `None` then the format will be detected from the extension.
 
         """
-        selected_format = format
+        selected_format = save_format
         if selected_format is None:
             match Path(path).suffix.lower():
                 case ".yaml" | ".yml":
@@ -221,10 +241,7 @@ class MockRecipe:
                 case ".json":
                     selected_format = "json"
                 case suffix:
-                    msg = (
-                        f"Cannot infer recipe format from extension {suffix!r}; "
-                        "pass format='yaml' or format='json'."
-                    )
+                    msg = f"Cannot infer recipe format from extension {suffix!r}; pass format='yaml' or format='json'."
                     raise ValueError(msg)
 
         match selected_format:
@@ -237,13 +254,39 @@ class MockRecipe:
 
     @classmethod
     def from_yaml(cls, path: str | PathLike[str]) -> MockRecipe:
-        from phasmock._recipe_yaml import from_yaml
+        """Load a recipe from a YAML file.
+
+        Parameters
+        ----------
+        path : Path
+            The path to the YAML file.
+
+        Returns
+        -------
+        recipe : MockRecipe
+            The loaded recipe.
+
+        """
+        from phasmock._recipe_yaml import from_yaml  # noqa: PLC0415
 
         return cls._from_parsed(from_yaml(path))
 
     @classmethod
     def from_json(cls, path: str | PathLike[str]) -> MockRecipe:
-        from phasmock._recipe_json import from_json
+        """Load a recipe from a JSON file.
+
+        Parameters
+        ----------
+        path : Path
+            The path to the JSON file.
+
+        Returns
+        -------
+        recipe : MockRecipe
+            The loaded recipe.
+
+        """
+        from phasmock._recipe_json import from_json  # noqa: PLC0415
 
         return cls._from_parsed(from_json(path))
 
@@ -286,12 +329,8 @@ class MockRecipe:
                 "x": _axis_to_data(self._x_edges),
                 "y": _axis_to_data(self._y_edges),
             },
-            "background": [
-                _component_to_data(component) for component in self._model.background
-            ],
-            "signal": [
-                _component_to_data(component) for component in self._model.signal
-            ],
+            "background": [_component_to_data(component) for component in self._model.background],
+            "signal": [_component_to_data(component) for component in self._model.signal],
             "sampling": {
                 "count": self._num_samples,
                 "seed": self._rng.seed,

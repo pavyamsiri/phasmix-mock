@@ -40,14 +40,12 @@ class MockGrid:
         _validate_grid_dtype("density", self.density, dtype=np.float64)
         _validate_grid_dtype("background", self.background, dtype=np.float64)
 
-        _validate_common_shape(
-            ("density", self.density), ("background", self.background)
-        )
+        _validate_common_shape(("density", self.density), ("background", self.background))
 
 
 @dataclass(frozen=True)
 class MockParticles:
-    """Generated mock data returned in the form of particle phase space coordinates, 2D number count array and 2D background number count array.
+    """Generated mock data returned in the form of particle phase space coordinates, number count map and background.
 
     Attributes
     ----------
@@ -80,17 +78,13 @@ class MockParticles:
         _validate_grid_dtype("background", self.background, dtype=np.float64)
 
         _validate_common_shape(("x", self.x), ("y", self.y))
-        _validate_common_shape(
-            ("density", self.density), ("background", self.background)
-        )
+        _validate_common_shape(("density", self.density), ("background", self.background))
 
 
 class MockModel:
     """The data model used during mock data generation."""
 
-    def __init__(
-        self, signal: Sequence[Component], background: Sequence[Component]
-    ) -> None:
+    def __init__(self, signal: Sequence[Component], background: Sequence[Component]) -> None:
         """Create mock data model.
 
         Parameters
@@ -114,9 +108,7 @@ class MockModel:
         """Sequence[Component]: The list of background components."""
         return self._background
 
-    def mock_grid(
-        self, x_edges: onp.Array1D[np.float64], y_edges: onp.Array1D[np.float64]
-    ) -> MockGrid:
+    def mock_grid(self, x_edges: onp.Array1D[np.float64], y_edges: onp.Array1D[np.float64]) -> MockGrid:
         """Generate mock data and return the data in grid form.
 
         Parameters
@@ -138,16 +130,12 @@ class MockModel:
         num_x_bins: int = len(x_centres)
         num_y_bins: int = len(y_centres)
 
-        background: onp.Array2D[np.float64] = np.zeros(
-            (num_y_bins, num_x_bins), dtype=np.float64
-        )
+        background: onp.Array2D[np.float64] = np.zeros((num_y_bins, num_x_bins), dtype=np.float64)
 
         for comp in self._background:
             background += comp(x_mesh, y_mesh)
 
-        signal: onp.Array2D[np.float64] = np.full(
-            (num_y_bins, num_x_bins), -np.inf, dtype=np.float64
-        )
+        signal: onp.Array2D[np.float64] = np.full((num_y_bins, num_x_bins), -np.inf, dtype=np.float64)
 
         for comp in self._signal:
             signal = np.maximum(signal, comp(x_mesh, y_mesh))
@@ -207,9 +195,7 @@ class MockModel:
             p=density_norm,
         )
 
-        sample_indices_y, sample_indices_x = np.unravel_index(
-            sample_indices, density.shape
-        )
+        sample_indices_y, sample_indices_x = np.unravel_index(sample_indices, density.shape)
 
         x_centres = 0.5 * (x_edges[:-1] + x_edges[1:])
         y_centres = 0.5 * (y_edges[:-1] + y_edges[1:])
@@ -219,9 +205,7 @@ class MockModel:
         sample_x = x_centres[sample_indices_x] + jitter_x
         sample_y = y_centres[sample_indices_y] + jitter_y
 
-        return MockParticles(
-            x=sample_x, y=sample_y, density=density, background=background
-        )
+        return MockParticles(x=sample_x, y=sample_y, density=density, background=background)
 
 
 def _validate_grid_ndim(name: str, arr: np.ndarray, *, ndim: int) -> None:
@@ -230,9 +214,7 @@ def _validate_grid_ndim(name: str, arr: np.ndarray, *, ndim: int) -> None:
         raise ValueError(msg)
 
 
-def _validate_grid_dtype[T: np.generic](
-    name: str, arr: np.ndarray, *, dtype: np.dtype[T] | type[T]
-) -> None:
+def _validate_grid_dtype[T: np.generic](name: str, arr: np.ndarray, *, dtype: np.dtype[T] | type[T]) -> None:
     if arr.dtype != dtype:
         msg = f"`{name}` must be an array with dtype {dtype}: {arr.dtype} != {dtype}"
         raise ValueError(msg)
