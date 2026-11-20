@@ -1,7 +1,7 @@
 [project]
 name = "phasmix-mock"
 version = "0.1.0"
-description = "Add your description here"
+description = "A mock phase spiral generator."
 readme = "README.md"
 authors = [
     { name = "Pavadol Yamsiri", email = "pavyamsiri@gmail.com" }

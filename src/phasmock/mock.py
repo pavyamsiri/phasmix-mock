@@ -84,7 +84,9 @@ class MockParticles:
 class MockModel:
     """The data model used during mock data generation."""
 
-    def __init__(self, signal: Sequence[Component], background: Sequence[Component]) -> None:
+    def __init__(
+        self, signal: Sequence[Component], background: Sequence[Component], selection: Sequence[Component] | None = None
+    ) -> None:
         """Create mock data model.
 
         Parameters
@@ -93,10 +95,13 @@ class MockModel:
             The components that comprise the signal/perturbation.
         background : Sequence[Component]
             The components that comprise the background.
+        selection : Sequence[Component] | None
+            The components that comprise the selection function layer.
 
         """
         self._signal: Final[Sequence[Component]] = signal
         self._background: Final[Sequence[Component]] = background
+        self._selection: Final[Sequence[Component]] = selection if selection is not None else ()
 
     @property
     def signal(self) -> Sequence[Component]:
@@ -106,6 +111,11 @@ class MockModel:
     @property
     def background(self) -> Sequence[Component]:
         """Sequence[Component]: The list of background components."""
+        return self._background
+
+    @property
+    def selection(self) -> Sequence[Component]:
+        """Sequence[Component]: The list of selection function components."""
         return self._background
 
     def mock_grid(self, x_edges: onp.Array1D[np.float64], y_edges: onp.Array1D[np.float64]) -> MockGrid:
@@ -141,7 +151,12 @@ class MockModel:
             signal = np.maximum(signal, comp(x_mesh, y_mesh))
         signal[~np.isfinite(signal)] = 1.0
 
-        density = background * signal
+        selection_mask: onp.Array2D[np.float64] = np.ones((num_y_bins, num_x_bins), dtype=np.float64)
+
+        for comp in self._selection:
+            selection_mask *= comp(x_mesh, y_mesh)
+
+        density = background * signal * selection_mask
         norm = np.sum(density)
 
         return MockGrid(density=density / norm, background=background / norm)
