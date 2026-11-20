@@ -7,13 +7,13 @@ from typing import TYPE_CHECKING, Final
 
 import numpy as np
 
-from phasmock.component import Component
-
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     import optype as op
     from optype import numpy as onp
+
+    from phasmock.component import Component
 
 
 @dataclass(frozen=True)
@@ -194,10 +194,7 @@ class MockModel:
         density = num_samples * mock_grid.density
 
         if not isinstance(rng, np.random.Generator):
-            if rng is not None:
-                rng = np.random.default_rng()
-            else:
-                rng = np.random.default_rng(rng)
+            rng = np.random.default_rng() if rng is not None else np.random.default_rng(rng)
 
         density_flat = density.ravel()
         density_norm = density_flat / np.sum(density_flat)

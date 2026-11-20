@@ -2,20 +2,19 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, Final, cast, override
 
 import strictyaml
 from strictyaml.validators import Validator
 
-from phasmock._recipe_types import ParsedRecipeData
-
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from os import PathLike
+
     from strictyaml.yamllocation import YAMLChunk
 
-    from phasmock._recipe_types import ComponentEntry
+    from phasmock._recipe_types import ComponentEntry, ParsedRecipeData
 
 
 class _ComponentSchema(Validator):

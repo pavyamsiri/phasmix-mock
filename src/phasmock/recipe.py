@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, assert_never, override
 
@@ -13,6 +12,7 @@ from phasmock.component import AlinderComponent, Component, GaussianComponent
 from phasmock.mock import MockModel, MockParticles
 
 if TYPE_CHECKING:
+    from os import PathLike
     from typing import Final, Literal
 
     from optype import numpy as onp

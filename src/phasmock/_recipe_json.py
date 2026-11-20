@@ -6,9 +6,12 @@ its format-specific validation belong in this module.
 
 from __future__ import annotations
 
-from os import PathLike
+from typing import TYPE_CHECKING
 
-from phasmock._recipe_types import ParsedRecipeData
+if TYPE_CHECKING:
+    from os import PathLike
+
+    from phasmock._recipe_types import ParsedRecipeData
 
 
 def from_json(path: str | PathLike[str]) -> ParsedRecipeData:
