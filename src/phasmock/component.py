@@ -17,7 +17,11 @@ import numpy as np
 from scipy import special
 
 if TYPE_CHECKING:
+    from typing import Final
+
     from optype import numpy as onp
+
+__all__: Final[list[str]] = ["AlinderComponent", "Component", "GaussianComponent"]
 
 
 @runtime_checkable
@@ -77,7 +81,6 @@ class GaussianComponent(Component):
 
     def __post_init__(self) -> None:
         """Validate attributes."""
-
         # Ensure lengths are positive
         _validate_positive("x_scale", self.x_scale)
         _validate_positive("y_scale", self.y_scale)
@@ -95,9 +98,7 @@ class GaussianComponent(Component):
         self, x: onp.ArrayND[np.float64, ShapeT], y: onp.ArrayND[np.float64, ShapeT], /
     ) -> onp.ArrayND[np.float64, ShapeT]:
         rxy = np.hypot(x / self.x_scale, y / self.y_scale).astype(np.float64)
-        result = self.amplitude * np.exp(-np.square(rxy) / self.variance).astype(
-            np.float64
-        )
+        result = self.amplitude * np.exp(-np.square(rxy) / self.variance).astype(np.float64)
         return cast("onp.ArrayND[np.float64, ShapeT]", result)
 
 
@@ -137,7 +138,6 @@ class AlinderComponent(Component):
 
     def __post_init__(self) -> None:
         """Validate attributes."""
-
         _validate_positive("b", self.b)
         _validate_positive("scale_factor", self.scale_factor)
         _validate_positive("flattening_strength", self.flattening_strength)
@@ -166,14 +166,10 @@ class AlinderComponent(Component):
         phase = self.spiral_phase(r_mesh)
 
         flattening = special.expit((r_mesh - self.rho) / self.flattening_strength)
-        pert = 1.0 + self.alpha * flattening * np.cos(
-            self.winding * theta_mesh - phase - self.theta0
-        )
+        pert = 1.0 + self.alpha * flattening * np.cos(self.winding * theta_mesh - phase - self.theta0)
         return cast("onp.ArrayND[np.float64, ShapeT]", pert)
 
-    def spiral_phase[ShapeT: tuple[Any, ...]](
-        self, r: onp.ArrayND[np.float64, ShapeT]
-    ) -> onp.ArrayND[np.float64, ShapeT]:
+    def spiral_phase[ShapeT: tuple[Any, ...]](self, r: onp.ArrayND[np.float64, ShapeT]) -> onp.ArrayND[np.float64, ShapeT]:
         """Compute the phase angle of the spiral phi_s(r).
 
         Parameters

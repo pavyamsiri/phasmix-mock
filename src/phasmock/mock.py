@@ -34,7 +34,6 @@ class MockGrid:
 
     def __post_init__(self) -> None:
         """Validate attributes."""
-
         _validate_grid_ndim("density", self.density, ndim=2)
         _validate_grid_ndim("background", self.background, ndim=2)
 
@@ -70,7 +69,6 @@ class MockParticles:
 
     def __post_init__(self) -> None:
         """Validate attributes."""
-
         _validate_grid_ndim("x", self.x, ndim=1)
         _validate_grid_ndim("y", self.y, ndim=1)
         _validate_grid_ndim("density", self.density, ndim=2)

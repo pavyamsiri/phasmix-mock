@@ -2,7 +2,9 @@
 
 import unittest
 from pathlib import Path
+from typing import override
 
+import pytest
 import strictyaml
 
 from phasmock._recipe_yaml import recipe_schema
@@ -11,18 +13,27 @@ EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
 
 
 class RecipeSchemaTests(unittest.TestCase):
+    """Test the parsing of recipe schemas."""
+
+    contents: str  # pyright: ignore[reportUninitializedInstanceVariable]
+    schema: strictyaml.Map  # pyright: ignore[reportUninitializedInstanceVariable]
+
+    @override
     def setUp(self) -> None:
+        """Set up the test environment."""
         self.contents = (EXAMPLES / "two-arm.yaml").read_text()
         self.schema = recipe_schema()
 
     def test_full_example_and_reusable_schema(self) -> None:
+        """Test a full recipe and reuse the schema."""
         for _ in range(2):
-            data = strictyaml.load(self.contents, self.schema).data
-            self.assertEqual(data["background"][0]["parameters"]["x_scale"], 0.4)
-            self.assertIsInstance(data["signal"][0]["parameters"]["winding"], int)
-            self.assertEqual(len(data["signal"]), 2)
+            data = strictyaml.load(self.contents, self.schema).data  # pyright: ignore[reportAny]
+            assert data["background"][0]["parameters"]["x_scale"] == 0.4
+            assert isinstance(data["signal"][0]["parameters"]["winding"], int)
+            assert len(data["signal"]) == 2  # pyright: ignore[reportAny]
 
     def test_component_defaults(self) -> None:
+        """Test default values for components."""
         contents = self.contents
         for line in (
             "    x_offset: 0.0\n",
@@ -31,21 +42,21 @@ class RecipeSchemaTests(unittest.TestCase):
             "    flattening_strength: 0.1\n",
         ):
             contents = contents.replace(line, "")
-        data = strictyaml.load(contents, self.schema).data
-        self.assertEqual(data["background"][0]["parameters"]["x_offset"], 0.0)
-        self.assertEqual(data["signal"][0]["parameters"]["winding"], 1)
-        self.assertEqual(data["signal"][0]["parameters"]["flattening_strength"], 0.1)
+        data = strictyaml.load(contents, self.schema).data  # pyright: ignore[reportAny]
+        assert data["background"][0]["parameters"]["x_offset"] == 0.0
+        assert data["signal"][0]["parameters"]["winding"] == 1
+        assert data["signal"][0]["parameters"]["flattening_strength"] == 0.1
 
     def test_either_type_in_either_sequence(self) -> None:
+        """Test the supported background and signal component types."""
         contents = self.contents.replace("background:", "TEMP:")
-        contents = contents.replace("signal:", "background:").replace(
-            "TEMP:", "signal:"
-        )
-        data = strictyaml.load(contents, self.schema).data
-        self.assertEqual(data["background"][0]["type"], "alinder-v1")
-        self.assertEqual(data["signal"][0]["type"], "gaussian-v1")
+        contents = contents.replace("signal:", "background:").replace("TEMP:", "signal:")
+        data = strictyaml.load(contents, self.schema).data  # pyright: ignore[reportAny]
+        assert data["background"][0]["type"] == "alinder-v1"
+        assert data["signal"][0]["type"] == "gaussian-v1"
 
     def test_invalid_components(self) -> None:
+        """Test invalid components."""
         replacements = (
             ("type: gaussian-v1", "type: unknown"),
             ("type: gaussian-v1", "type: alinder-v1"),
@@ -60,10 +71,6 @@ class RecipeSchemaTests(unittest.TestCase):
         for old, new in replacements:
             with (
                 self.subTest(old=old, new=new),
-                self.assertRaises(strictyaml.YAMLValidationError),
+                pytest.raises(strictyaml.YAMLValidationError),
             ):
-                strictyaml.load(self.contents.replace(old, new), self.schema)
-
-
-if __name__ == "__main__":
-    unittest.main()
+                strictyaml.load(self.contents.replace(old, new), self.schema)  # pyright: ignore[reportUnusedCallResult]

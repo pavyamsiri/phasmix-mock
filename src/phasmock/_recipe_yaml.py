@@ -13,9 +13,9 @@ from strictyaml.validators import Validator
 from phasmock._recipe_types import ParsedRecipeData
 
 if TYPE_CHECKING:
-    from phasmock._recipe_types import ComponentEntry
-
     from strictyaml.yamllocation import YAMLChunk
+
+    from phasmock._recipe_types import ComponentEntry
 
 
 class _ComponentSchema(Validator):

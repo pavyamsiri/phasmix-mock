@@ -127,7 +127,7 @@ class MockRecipe:
 
     @property
     def description(self) -> str | None:
-        """str | None: The description if set."""
+        """Str | None: The description if set."""
         return self._description
 
     @override

@@ -31,3 +31,27 @@ dev = [
     "matplotlib>=3.10.9",
     "pytest>=9.1.1",
 ]
+
+[tool.ruff]
+line-length = 130
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "CPY001",
+    "COM812",
+    "D100",
+    "D103",
+    "D203",
+    "D213",
+    "ISC001",
+    "PLR0913",
+    "PLR0915",
+    "PLR2004",
+    "S101",
+    "TD003",
+    "C901",
+]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/**/*.py" = ["S101"]
